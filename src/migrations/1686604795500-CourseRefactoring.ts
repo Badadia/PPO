@@ -1,15 +1,15 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CourseRefactoring1686604795500 implements MigrationInterface {
+export class UserRefactoring1686604795500 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "courses" RENAME COLUMN "name" TO "course"`,
+      `ALTER TABLE "users" RENAME COLUMN "name" TO "user"`,
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "courses" RENAME COLUMN "course" TO "name"`,
+      `ALTER TABLE "users" RENAME COLUMN "user" TO "name"`,
     );
   }
 }
