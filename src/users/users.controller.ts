@@ -9,24 +9,42 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Query,
+  UseInterceptors,
+  SerializeOptions,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { Dto } from './dto/dto';
+import { Dto, UserQueryDto } from './dto/dto';
 import { DtoUpdate } from './dto/dto-update';
 import { LoginDto } from './dto/dtoLogin';
 import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from './roles/roles.guard';
+import { Role } from './roles/roles.enum';
+import { Roles } from './roles/roles.decorator';
+import { OwnerChecker } from './roles/decorator/ownership.checker.decorator';
+import { UserOwnershipChecker } from './owner/user.ownership.checker';
 
 @Controller('user')
+@UseInterceptors(ClassSerializerInterceptor)
+@SerializeOptions({
+  exposeUnsetFields: false,
+})
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  findAll() {
+  @Roles(Role.Admin, Role.Owner)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  findAll(@Query() query: UserQueryDto) {
+    //todo: transformar a query em filtro e passar como paratero no userService.findAll
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard('jwt'))
+  @Roles(Role.Admin, Role.Owner)
+  @OwnerChecker(UserOwnershipChecker)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
@@ -46,11 +64,15 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @Roles(Role.Admin, Role.User)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   update(@Param('id') id: string, @Body() updateDto: DtoUpdate) {
     this.usersService.update(id, updateDto);
   }
 
   @Delete(':id')
+  @Roles(Role.Admin, Role.User)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   remove(@Param('id') id: string) {
     this.usersService.remove(+id);
   }

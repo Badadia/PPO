@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsNumber, IsString, MinLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
+import { Role } from '../roles/roles.enum';
 
 export class Dto {
   @IsNotEmpty()
@@ -17,4 +24,13 @@ export class Dto {
   @IsString()
   @MinLength(6)
   senha: string;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly role: string;
+}
+
+export class UserQueryDto {
+  @IsOptional()
+  owner: any;
 }
