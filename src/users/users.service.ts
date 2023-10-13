@@ -1,11 +1,20 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { Dto } from './dto/dto';
 import { DtoUpdate } from './dto/dto-update';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/auth/auth.service';
-import { LoginDto } from './dto/dtoLogin';
+import { Role } from './roles/roles.enum';
+import { Request } from 'express';
+import { JwtPayload } from 'src/auth/models/jwt-payload.model';
 
 @Injectable()
 export class UsersService {
@@ -30,33 +39,34 @@ export class UsersService {
     return user;
   }
 
-  async register(createUserDto: Dto) {
-    const hashedPassword = await this.hashPassword(createUserDto.senha);
-    const user = this.userRepository.create({
-      ...createUserDto,
+  async register(createUserDto: Dto): Promise<{
+    token: string;
+    nome: string;
+    email: string;
+    telefone: number;
+    id: any;
+  }> {
+    const { nome, telefone, email, senha } = createUserDto;
+    if (!nome || !telefone || !email || !senha) {
+      throw new UnprocessableEntityException('Validation problem');
+    }
+    const hashedPassword = await bcrypt.hash(senha, 10);
+    const user = await this.userRepository.create({
+      nome,
+      telefone,
+      email,
+      role: Role.User,
       senha: hashedPassword,
     });
-    return this.userRepository.save(user);
-  }
 
-  public async login(
-    loginDto: LoginDto,
-  ): Promise<{ nome: string; jwtToken: string; email: string }> {
-    const user = await this.findByEmail(loginDto.email);
-    const match = await this.checkPassword(loginDto.senha, user);
+    await this.userRepository.save(user);
 
-    if (!match) {
-      throw new NotFoundException('Invalid Credentials.');
-    }
-    const jwtToken = await this.authService.CreateAcessToken(
-      user.id.toString(),
-    );
-
-    return {
+    const { token } = this.authService.generateToken({
+      id: user.id,
       nome: user.nome,
-      jwtToken,
-      email: user.email,
-    };
+      role: user.role,
+    });
+    return { token, nome, telefone, id: user.id, email };
   }
 
   private async findByEmail(email: string): Promise<User> {
@@ -81,21 +91,18 @@ export class UsersService {
     return match;
   }
 
-  async update(id: string, updateUsersDto: DtoUpdate) {
+  async update(id: number, updateUsersDto: DtoUpdate) {
     if (updateUsersDto.senha) {
       updateUsersDto.senha = await this.hashPassword(updateUsersDto.senha);
     }
 
-    const user = await this.userRepository.preload({
-      id: +id,
-      ...updateUsersDto,
-    });
+    const updateResult = await this.userRepository.update(id, updateUsersDto);
 
-    if (!user) {
+    if (updateResult.affected === 0) {
       throw new NotFoundException(`User ID ${id} not found`);
     }
 
-    return this.userRepository.save(user);
+    return this.userRepository.findOne({ where: { id: id } });
   }
 
   async remove(id: number) {
@@ -113,5 +120,28 @@ export class UsersService {
   private async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
     return bcrypt.hash(password, saltRounds);
+  }
+
+  public async validateUser(jwtPayload: JwtPayload): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: jwtPayload.userId },
+    });
+    if (!user) {
+      throw new UnauthorizedException('User not found.');
+    }
+    return user;
+  }
+
+  private static jwtExtractor(request: Request): string {
+    const authHeader = request.headers.authorization;
+    if (!authHeader) {
+      throw new BadRequestException('Bad request.');
+    }
+    const [, token] = authHeader.split(' ');
+    return token;
+  }
+
+  public returnJwtExtractor(): (request: Request) => string {
+    return UsersService.jwtExtractor;
   }
 }

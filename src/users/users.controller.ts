@@ -13,20 +13,25 @@ import {
   UseInterceptors,
   SerializeOptions,
   ClassSerializerInterceptor,
+  Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Dto, UserQueryDto } from './dto/dto';
 import { DtoUpdate } from './dto/dto-update';
-import { LoginDto } from './dto/dtoLogin';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from './roles/roles.guard';
 import { Role } from './roles/roles.enum';
 import { Roles } from './roles/roles.decorator';
 import { OwnerChecker } from './roles/decorator/ownership.checker.decorator';
 import { UserOwnershipChecker } from './owner/user.ownership.checker';
+import { JwtAuth } from 'src/auth/decorator/jwt.auth.decorator';
+import { Public } from 'src/auth/decorator/public.auth.decorator';
+import { Request, Response } from 'express';
 
 @Controller('user')
 @UseInterceptors(ClassSerializerInterceptor)
+@JwtAuth()
+@OwnerChecker(UserOwnershipChecker)
 @SerializeOptions({
   exposeUnsetFields: false,
 })
@@ -50,23 +55,22 @@ export class UsersController {
   }
 
   @Post()
+  @Public()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createUserDto: Dto) {
-    return this.usersService.register(createUserDto);
-  }
-
-  @Post('login')
-  @HttpCode(HttpStatus.OK)
-  public async login(
-    @Body() loginDto: LoginDto,
-  ): Promise<{ nome: string; jwtToken: string; email: string }> {
-    return this.usersService.login(loginDto);
+  public async create(
+    @Body() registerDto: Dto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = await this.usersService.register(registerDto);
+    res.set('Authorization', 'Bearer ' + user.token);
+    const { token, ...body } = user;
+    return body;
   }
 
   @Patch(':id')
   @Roles(Role.Admin, Role.User)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  update(@Param('id') id: string, @Body() updateDto: DtoUpdate) {
+  update(@Param('id') id: number, @Body() updateDto: DtoUpdate) {
     this.usersService.update(id, updateDto);
   }
 

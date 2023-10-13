@@ -9,12 +9,12 @@ import { RolesGuard } from './users/roles/roles.guard';
 
 @Module({
   imports: [
-    UsersModule,
-    DatabaseModule,
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
     }),
+    UsersModule,
+    DatabaseModule,
     AuthModule,
   ],
   controllers: [AppController],
