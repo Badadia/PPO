@@ -45,7 +45,6 @@ export class AuthService {
     loginDto: LoginDto,
   ): Promise<{ nome: string; id: any; email: string; role: Role }> {
     const { email, senha } = loginDto;
-    console.log(email);
     const login = await this.userRepository.findOne({
       where: { email: email },
     });

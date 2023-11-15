@@ -69,28 +69,6 @@ export class UsersService {
     return { token, nome, telefone, id: user.id, email };
   }
 
-  private async findByEmail(email: string): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where: { email },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found.');
-    }
-
-    return user;
-  }
-
-  private async checkPassword(senha: string, user: User): Promise<boolean> {
-    const match = await bcrypt.compare(senha, user.senha);
-
-    if (!match) {
-      throw new NotFoundException('Password not found.');
-    }
-
-    return match;
-  }
-
   async update(id: number, updateUsersDto: DtoUpdate) {
     if (updateUsersDto.senha) {
       updateUsersDto.senha = await this.hashPassword(updateUsersDto.senha);
