@@ -18,6 +18,7 @@ export class AuthController {
   async peformLogin(@Req() req, @Res({ passthrough: true }) res: Response) {
     const login = await this.authService.generateToken(req.user);
     res.set('Authorization', login.token);
+    res.set('Access-Control-Expose-Headers', 'Authorization');
     return req.user;
   }
 

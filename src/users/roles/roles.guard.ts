@@ -30,7 +30,8 @@ export class RolesGuard implements CanActivate {
     const ownershipMetadata = this.getOwnershipMetadata(context);
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    if (!this.matchRoles && roles.includes(Role.Owner)) {
+    const hasSomeRole = this.matchRoles(roles, user.role);
+    if (!hasSomeRole && roles.includes(Role.Owner)) {
       const resourceId = request.params?.id ? request.params?.id : null;
       if (!resourceId && request.method === 'GET') {
         this.fillOwnershipQueryParam(user, request);
@@ -38,7 +39,7 @@ export class RolesGuard implements CanActivate {
       }
       return this.checkOwnership(resourceId, user.id, ownershipMetadata);
     }
-    return this.matchRoles(roles, user.role);
+    return hasSomeRole;
   }
 
   private getRolesMetadata(context: ExecutionContext): Role[] {

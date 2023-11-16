@@ -102,7 +102,7 @@ export class UsersService {
 
   public async validateUser(jwtPayload: JwtPayload): Promise<User> {
     const user = await this.userRepository.findOne({
-      where: { id: jwtPayload.userId },
+      where: { id: jwtPayload.sub },
     });
     if (!user) {
       throw new UnauthorizedException('User not found.');
