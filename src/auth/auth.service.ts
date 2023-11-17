@@ -7,33 +7,58 @@ import {
 import { sign } from 'jsonwebtoken';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
 import { Request } from 'express';
-import { JwtPayload } from './models/jwt-payload.model';
+import { JwtService } from '@nestjs/jwt';
+import { LoginDto } from 'src/users/dto/dtoLogin';
+import { Role } from 'src/users/roles/roles.enum';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject('USERS_REPOSITORY')
     private readonly userRepository: Repository<User>,
+    private jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
+  generateToken(user: any) {
+    const token = this.jwtService.sign({
+      sub: user.id,
+      nome: user.nome,
+      role: user.role,
+    });
+
+    return { token };
+  }
+
   public async CreateAcessToken(userId: string): Promise<string> {
-    return sign({ userId }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES,
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+    const jwtExpires = this.configService.get<string>('JWT_EXPIRES');
+    return sign({ userId }, jwtSecret, {
+      expiresIn: jwtExpires,
     });
   }
 
-  public async validateUser(jwtPayload: JwtPayload): Promise<User> {
-    const userId = +jwtPayload.userId;
-
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
+  public async validateUser(
+    loginDto: LoginDto,
+  ): Promise<{ nome: string; id: any; email: string; role: Role }> {
+    const { email, senha } = loginDto;
+    const login = await this.userRepository.findOne({
+      where: { email: email },
     });
 
-    if (!user) {
-      throw new UnauthorizedException('User not found.');
+    if (!login || !(await bcrypt.compare(senha, login.senha))) {
+      throw new UnauthorizedException('Incorrect Email or Password!');
     }
-    return user;
+
+    return {
+      id: login.id,
+      nome: login.nome,
+      email: login.email,
+      role: login.role,
+    };
   }
 
   private static JwtExtractor(request: Request): string {

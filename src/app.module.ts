@@ -5,18 +5,19 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
+import { RolesGuard } from './users/roles/roles.guard';
 
 @Module({
   imports: [
-    UsersModule,
-    DatabaseModule,
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
     }),
+    UsersModule,
+    DatabaseModule,
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, RolesGuard],
 })
 export class AppModule {}

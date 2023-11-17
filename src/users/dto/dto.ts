@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsString, MinLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class Dto {
   @IsNotEmpty()
@@ -17,4 +23,9 @@ export class Dto {
   @IsString()
   @MinLength(6)
   senha: string;
+}
+
+export class UserQueryDto {
+  @IsOptional()
+  owner: any;
 }

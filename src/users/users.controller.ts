@@ -9,48 +9,74 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Query,
+  UseInterceptors,
+  SerializeOptions,
+  ClassSerializerInterceptor,
+  Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { Dto } from './dto/dto';
+import { Dto, UserQueryDto } from './dto/dto';
 import { DtoUpdate } from './dto/dto-update';
-import { LoginDto } from './dto/dtoLogin';
 import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from './roles/roles.guard';
+import { Role } from './roles/roles.enum';
+import { Roles } from './roles/roles.decorator';
+import { OwnerChecker } from './roles/decorator/ownership.checker.decorator';
+import { UserOwnershipChecker } from './owner/user.ownership.checker';
+import { JwtAuth } from 'src/auth/decorator/jwt.auth.decorator';
+import { Public } from 'src/auth/decorator/public.auth.decorator';
+import { Request, Response } from 'express';
 
 @Controller('user')
+@UseInterceptors(ClassSerializerInterceptor)
+@JwtAuth()
+@OwnerChecker(UserOwnershipChecker)
+@SerializeOptions({
+  exposeUnsetFields: false,
+})
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  findAll() {
+  @Roles(Role.Admin, Role.Owner)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  findAll(@Query() query: UserQueryDto) {
+    //todo: transformar a query em filtro e passar como paratero no userService.findAll
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard('jwt'))
+  @Roles(Role.Admin, Role.Owner)
+  @OwnerChecker(UserOwnershipChecker)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
   @Post()
+  @Public()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createUserDto: Dto) {
-    return this.usersService.register(createUserDto);
-  }
-
-  @Post('login')
-  @HttpCode(HttpStatus.OK)
-  public async login(
-    @Body() loginDto: LoginDto,
-  ): Promise<{ nome: string; jwtToken: string; email: string }> {
-    return this.usersService.login(loginDto);
+  public async create(
+    @Body() registerDto: Dto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = await this.usersService.register(registerDto);
+    res.set('Authorization', 'Bearer ' + user.token);
+    const { token, ...body } = user;
+    return body;
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDto: DtoUpdate) {
+  @Roles(Role.Admin, Role.Owner)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  update(@Param('id') id: number, @Body() updateDto: DtoUpdate) {
     this.usersService.update(id, updateDto);
   }
 
   @Delete(':id')
+  @Roles(Role.Admin, Role.Owner)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   remove(@Param('id') id: string) {
     this.usersService.remove(+id);
   }
