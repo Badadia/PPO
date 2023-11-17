@@ -68,7 +68,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(Role.Admin, Role.User)
+  @Roles(Role.Admin, Role.Owner)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   update(@Param('id') id: number, @Body() updateDto: DtoUpdate) {
     this.usersService.update(id, updateDto);
