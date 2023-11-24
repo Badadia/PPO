@@ -3,7 +3,6 @@ import { AuthService } from './auth.service';
 import { DatabaseModule } from 'src/database/database.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { usersProviders } from '../users/users.providers';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { AppBaseExceptionFilter } from 'src/users/roles/exception/filter/base.exception.filter';
@@ -12,6 +11,7 @@ import { AuthController } from './auth.controller';
 import { UsersService } from 'src/users/users.service';
 import { ConfigService } from '@nestjs/config';
 import { LocalStrategy } from './strategy/local.startegy';
+import { JwtStrategy } from './strategy/jwt.strategy';
 
 @Module({
   imports: [
