@@ -22,7 +22,7 @@ export class RolesGuard implements CanActivate {
     return roles.some((role) => role === userRole);
   }
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.getRolesMetadata(context);
     if (!roles || roles.length === 0) {
       return true;
@@ -37,7 +37,7 @@ export class RolesGuard implements CanActivate {
         this.fillOwnershipQueryParam(user, request);
         return true;
       }
-      return this.checkOwnership(resourceId, user.id, ownershipMetadata);
+      return await this.checkOwnership(resourceId, user.id, ownershipMetadata);
     }
     return hasSomeRole;
   }
@@ -57,13 +57,13 @@ export class RolesGuard implements CanActivate {
     >(OWNER_CHECKER, [context.getHandler(), context.getClass()]);
   }
 
-  private checkOwnership(
+  private async checkOwnership(
     resourceId: any,
     userId: any,
     ownershipMetadata:
       | ResourceOwnershipChecker
       | Type<ResourceOwnershipChecker>,
-  ): boolean {
+  ): Promise<boolean> {
     if (!ownershipMetadata) {
       throw new NoOwnershipCheckerException();
     }
@@ -79,7 +79,7 @@ export class RolesGuard implements CanActivate {
         ownershipMetadata as Type<ResourceOwnershipChecker>,
       );
     }
-    return ownershipChecker.checkOwnership(resourceId, userId);
+    return await ownershipChecker.checkOwnership(resourceId, userId);
   }
 
   private fillOwnershipQueryParam(user, request): void {

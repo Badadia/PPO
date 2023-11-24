@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesGuard } from './users/roles/roles.guard';
+import { ServicesModule } from './services/services.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RolesGuard } from './users/roles/roles.guard';
     UsersModule,
     DatabaseModule,
     AuthModule,
+    ServicesModule,
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],

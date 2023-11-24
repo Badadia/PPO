@@ -39,8 +39,8 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @Roles(Role.Admin, Role.Owner)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.Admin)
+  //@UseGuards(AuthGuard('jwt'), RolesGuard)
   findAll(@Query() query: UserQueryDto) {
     //todo: transformar a query em filtro e passar como paratero no userService.findAll
     return this.usersService.findAll();
