@@ -1,5 +1,12 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsString,
+} from 'class-validator';
 import { ServiceType } from './serviceType.enum';
+import { Point } from 'geojson';
 
 export class CreateServiceDto {
   @IsNotEmpty()
@@ -15,6 +22,6 @@ export class CreateServiceDto {
   descricao: string;
 
   @IsNotEmpty()
-  @IsString()
-  location: string;
+  @IsObject()
+  location: Point;
 }

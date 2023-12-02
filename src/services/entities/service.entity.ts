@@ -1,6 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { ServiceType } from '../dto/serviceType.enum';
 import { User } from 'src/users/entities/user.entity';
+import { Point } from 'geojson';
 
 @Entity()
 export class Service {
@@ -16,8 +17,12 @@ export class Service {
   @Column()
   descricao: string;
 
-  @Column()
-  location: string;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+  })
+  location: Point;
 
   @ManyToOne(() => User)
   user: User;
