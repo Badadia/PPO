@@ -3,7 +3,6 @@ import { ServicesService } from './services.service';
 import { ServicesController } from './services.controller';
 import { DatabaseModule } from 'src/database/database.module';
 import { AuthModule } from 'src/auth/auth.module';
-import { UserOwnershipChecker } from 'src/users/owner/user.ownership.checker';
 import { servicesProviders } from './services.providers';
 import { ServiceOwnershipChecker } from './owner/service.ownership.checker';
 

@@ -7,6 +7,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesGuard } from './users/roles/roles.guard';
 import { ServicesModule } from './services/services.module';
+import { ComplaintsModule } from './complaints/complaints.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ServicesModule } from './services/services.module';
     DatabaseModule,
     AuthModule,
     ServicesModule,
+    ComplaintsModule,
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],

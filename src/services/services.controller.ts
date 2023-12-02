@@ -50,11 +50,13 @@ export class ServicesController {
   }
 
   @Patch(':id')
+  @Roles(Role.Admin, Role.Owner)
   update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
     return this.servicesService.update(+id, updateServiceDto);
   }
 
   @Delete(':id')
+  @Roles(Role.Admin, Role.Owner)
   remove(@Param('id') id: string) {
     return this.servicesService.remove(+id);
   }
