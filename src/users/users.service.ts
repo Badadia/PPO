@@ -55,7 +55,7 @@ export class UsersService {
       nome,
       telefone,
       email,
-      role: Role.User,
+      role: Role.Admin,
       senha: hashedPassword,
     });
 

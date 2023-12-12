@@ -10,6 +10,7 @@ import {
   HttpStatus,
   UseInterceptors,
   ClassSerializerInterceptor,
+  Req,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -41,6 +42,11 @@ export class ServicesController {
   @Roles(Role.Admin)
   findAll() {
     return this.servicesService.findAll();
+  }
+
+  @Get('/user/:id')
+  findAllByUser(@Param('id') userId: number, @Req() req) {
+    return this.servicesService.findOwnerServices(userId, req.user);
   }
 
   @Get(':id')

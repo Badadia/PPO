@@ -26,7 +26,7 @@ import { OwnerChecker } from './roles/decorator/ownership.checker.decorator';
 import { UserOwnershipChecker } from './owner/user.ownership.checker';
 import { JwtAuth } from 'src/auth/decorator/jwt.auth.decorator';
 import { Public } from 'src/auth/decorator/public.auth.decorator';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 
 @Controller('user')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -40,7 +40,6 @@ export class UsersController {
 
   @Get()
   @Roles(Role.Admin)
-  //@UseGuards(AuthGuard('jwt'), RolesGuard)
   findAll(@Query() query: UserQueryDto) {
     //todo: transformar a query em filtro e passar como paratero no userService.findAll
     return this.usersService.findAll();
@@ -48,8 +47,6 @@ export class UsersController {
 
   @Get(':id')
   @Roles(Role.Admin, Role.Owner)
-  @OwnerChecker(UserOwnershipChecker)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
@@ -69,14 +66,12 @@ export class UsersController {
 
   @Patch(':id')
   @Roles(Role.Admin, Role.Owner)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   update(@Param('id') id: number, @Body() updateDto: DtoUpdate) {
     this.usersService.update(id, updateDto);
   }
 
   @Delete(':id')
   @Roles(Role.Admin, Role.Owner)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   remove(@Param('id') id: string) {
     this.usersService.remove(+id);
   }

@@ -1,9 +1,15 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { Service } from './entities/service.entity';
-import { Repository } from 'typeorm';
+import { Admin, Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
+import { ServiceStatus } from './dto/serviceStatus.enum';
 
 @Injectable()
 export class ServicesService {
@@ -17,15 +23,30 @@ export class ServicesService {
     userId: number,
   ): Promise<Service> {
     const service = await this.serviceRepository.create(createServiceDto);
+
     const user = new User();
     user.id = userId;
     service.user = user;
+    service.status = ServiceStatus.Pendente;
+
     await this.serviceRepository.save(service);
     return service;
   }
 
   async findAll() {
     return this.serviceRepository.find();
+  }
+
+  async findOwnerServices(
+    userId: number,
+    authenticatedUser: User,
+  ): Promise<Service[]> {
+    if (userId !== authenticatedUser.id && authenticatedUser.role !== 'admin') {
+      throw new ForbiddenException(
+        'Você não tem permissão para acessar esses serviços.',
+      );
+    }
+    return this.serviceRepository.find({ where: { user: { id: userId } } });
   }
 
   async findOne(id: number) {

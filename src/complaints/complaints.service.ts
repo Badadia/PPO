@@ -1,9 +1,15 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
 import { UpdateComplaintDto } from './dto/update-complaint.dto';
 import { Complaint } from './entities/complaint.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
+import { ComplaintStatus } from './dto/complaintStatus.enum';
 
 @Injectable()
 export class ComplaintsService {
@@ -17,15 +23,30 @@ export class ComplaintsService {
     userId: number,
   ): Promise<Complaint> {
     const complaint = await this.complaintRepository.create(createComplaintDto);
+
     const user = new User();
     user.id = userId;
     complaint.user = user;
+    complaint.status = ComplaintStatus.Pendente;
+
     await this.complaintRepository.save(complaint);
     return complaint;
   }
 
   async findAll() {
     return this.complaintRepository.find();
+  }
+
+  async findOwnerComplaints(
+    userId: number,
+    authenticatedUser: User,
+  ): Promise<Complaint[]> {
+    if (userId !== authenticatedUser.id && authenticatedUser.role !== 'admin') {
+      throw new ForbiddenException(
+        'Você não tem permissão para acessar essas denúncias.',
+      );
+    }
+    return this.complaintRepository.find({ where: { user: { id: userId } } });
   }
 
   async findOne(id: number) {

@@ -76,4 +76,9 @@ export class AuthService {
   public returnJwtExtractor(): (request: Request) => string {
     return AuthService.JwtExtractor;
   }
+
+  async getById(id: any) {
+    const user = await this.userRepository.findOne(id);
+    return user;
+  }
 }

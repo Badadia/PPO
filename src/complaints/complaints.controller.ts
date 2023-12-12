@@ -10,6 +10,7 @@ import {
   ClassSerializerInterceptor,
   HttpCode,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
 import { ComplaintsService } from './complaints.service';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
@@ -41,6 +42,10 @@ export class ComplaintsController {
   @Roles(Role.Admin)
   findAll() {
     return this.complaintsService.findAll();
+  }
+  @Get('/user/:id')
+  findAllByUser(@Param('id') userId: number, @Req() req) {
+    return this.complaintsService.findOwnerComplaints(userId, req.user);
   }
 
   @Get(':id')
