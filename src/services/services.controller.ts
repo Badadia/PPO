@@ -12,6 +12,8 @@ import {
   ClassSerializerInterceptor,
   Req,
   UseFilters,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -24,22 +26,28 @@ import { ServiceOwnershipChecker } from './owner/service.ownership.checker';
 import { AuthUser } from 'src/auth/decorator/request.user.decorator';
 import { UpdateServiceStatusDto } from './dto/updateServiceStatus.dto';
 import { CustomExceptionFilterService } from './filters/service.custom-exception.filter';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/multer-config';
+import { FileCleanupInterceptor } from './filters/fileCleanupInterceptor.filter';
 
 @JwtAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 @OwnerChecker(ServiceOwnershipChecker)
 @UseFilters(CustomExceptionFilterService)
+@UseInterceptors(FileCleanupInterceptor)
 @Controller('services')
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('file', multerConfig))
   @HttpCode(HttpStatus.CREATED)
   public async create(
+    @UploadedFile() file: Express.Multer.File,
     @Body() createServiceDto: CreateServiceDto,
     @AuthUser('id') userId: number,
   ) {
-    return this.servicesService.create(createServiceDto, userId);
+    return this.servicesService.create(createServiceDto, userId, file);
   }
 
   @Get()

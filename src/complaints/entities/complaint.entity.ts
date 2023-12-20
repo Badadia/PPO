@@ -28,6 +28,9 @@ export class Complaint {
   @Column()
   status: ComplaintStatus;
 
-  @ManyToOne(() => User)
+  @Column({ nullable: true })
+  imageUrl: string;
+
+  @ManyToOne(() => User, { eager: true })
   user: User;
 }

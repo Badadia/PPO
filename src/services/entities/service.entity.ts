@@ -28,6 +28,9 @@ export class Service {
   @Column()
   status: ServiceStatus;
 
-  @ManyToOne(() => User)
+  @Column({ nullable: true })
+  imageUrl: string;
+
+  @ManyToOne(() => User, { eager: true })
   user: User;
 }

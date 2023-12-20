@@ -4,11 +4,11 @@ import {
   IsNumber,
   IsObject,
   IsString,
-  isString,
 } from 'class-validator';
 import { ServiceType } from './serviceType.enum';
+import { Point } from 'geojson';
 
-export class CreateServiceDto {
+export class ServiceDto {
   @IsNotEmpty()
   @IsEnum(ServiceType)
   tipo: ServiceType;
@@ -22,10 +22,6 @@ export class CreateServiceDto {
   descricao: string;
 
   @IsNotEmpty()
-  @IsString()
-  latitude: string;
-
-  @IsNotEmpty()
-  @IsString()
-  longitude: string;
+  @IsObject()
+  location: Point;
 }
