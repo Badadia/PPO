@@ -23,7 +23,8 @@ export class AuthController {
   }
 
   @Get()
-  getProfile(@Req() req) {
-    return req.user;
+  public async getProfile(@Req() req) {
+    const profile = await this.authService.getById(req.user.id);
+    return profile;
   }
 }

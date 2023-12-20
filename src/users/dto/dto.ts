@@ -1,10 +1,4 @@
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  MinLength,
-} from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class Dto {
   @IsNotEmpty()
@@ -21,7 +15,6 @@ export class Dto {
 
   @IsNotEmpty()
   @IsString()
-  @MinLength(6)
   senha: string;
 }
 

@@ -5,7 +5,10 @@ import { ResourceOwnershipChecker } from '../roles/interface/resource.ownership.
 export class UserOwnershipChecker
   implements ResourceOwnershipChecker<number, number>
 {
-  public checkOwnership(resourceId: number, userId: number): boolean {
+  public async checkOwnership(
+    resourceId: number,
+    userId: number,
+  ): Promise<boolean> {
     return resourceId == userId;
   }
 }

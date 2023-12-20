@@ -8,10 +8,10 @@ export const databaseProviders = [
       const dataSource = new DataSource({
         type: 'postgres',
         host: 'localhost',
-        port: 5432,
+        port: 5433,
         username: 'postgres',
         password: 'Bryanbelo19',
-        database: 'postgres',
+        database: 'GusAlert',
         entities: [__dirname + '/../**/*.entity.js'],
         synchronize: true,
       });
@@ -24,10 +24,10 @@ export const databaseProviders = [
 export const dataSource = new DataSource({
   type: 'postgres',
   host: 'localhost',
-  port: 5432,
+  port: 5433,
   username: 'postgres',
   password: 'Bryanbelo19',
-  database: 'postgres',
+  database: 'GusAlert',
   entities: [__dirname + '/../**/*.entity.js'],
   synchronize: true,
   migrations: [UserRefactoring1686604795500],
