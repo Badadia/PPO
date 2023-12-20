@@ -40,6 +40,7 @@ export class UsersController {
 
   @Get()
   @Roles(Role.Admin)
+  @HttpCode(HttpStatus.OK)
   findAll(@Query() query: UserQueryDto) {
     //todo: transformar a query em filtro e passar como paratero no userService.findAll
     return this.usersService.findAll();
@@ -47,6 +48,7 @@ export class UsersController {
 
   @Get(':id')
   @Roles(Role.Admin, Role.Owner)
+  @HttpCode(HttpStatus.OK)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
@@ -66,12 +68,15 @@ export class UsersController {
 
   @Patch(':id')
   @Roles(Role.Admin, Role.Owner)
-  update(@Param('id') id: number, @Body() updateDto: DtoUpdate) {
-    this.usersService.update(id, updateDto);
+  @HttpCode(HttpStatus.OK)
+  async update(@Param('id') id: number, @Body() updateDto: DtoUpdate) {
+    const updatedUser = await this.usersService.update(id, updateDto);
+    return updatedUser;
   }
 
   @Delete(':id')
   @Roles(Role.Admin, Role.Owner)
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
     this.usersService.remove(+id);
   }

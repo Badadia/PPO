@@ -21,6 +21,7 @@ import { Role } from 'src/users/roles/roles.enum';
 import { Roles } from 'src/users/roles/roles.decorator';
 import { ServiceOwnershipChecker } from './owner/service.ownership.checker';
 import { AuthUser } from 'src/auth/decorator/request.user.decorator';
+import { UpdateServiceStatusDto } from './dto/updateServiceStatus.dto';
 
 @JwtAuth()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -59,6 +60,15 @@ export class ServicesController {
   @Roles(Role.Admin, Role.Owner)
   update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
     return this.servicesService.update(+id, updateServiceDto);
+  }
+
+  @Patch('status/:id')
+  @Roles(Role.Admin)
+  async updateStatus(
+    @Param('id') id: number,
+    @Body() updateStatusDto: UpdateServiceStatusDto,
+  ) {
+    return this.servicesService.updateStatus(id, updateStatusDto);
   }
 
   @Delete(':id')

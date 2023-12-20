@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Inject,
   Injectable,
   NotFoundException,
@@ -51,11 +52,26 @@ export class UsersService {
       throw new UnprocessableEntityException('Validation problem');
     }
     const hashedPassword = await bcrypt.hash(senha, 10);
+
+    if (senha.length < 6) {
+      throw new UnprocessableEntityException(
+        'A senha deve ter pelo menos 6 caracteres',
+      );
+    }
+
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email already in use!');
+    }
+
     const user = await this.userRepository.create({
       nome,
       telefone,
       email,
-      role: Role.Admin,
+      role: Role.User,
       senha: hashedPassword,
     });
 
@@ -80,7 +96,8 @@ export class UsersService {
       throw new NotFoundException(`User ID ${id} not found`);
     }
 
-    return this.userRepository.findOne({ where: { id: id } });
+    const user = await this.userRepository.findOne({ where: { id: id } });
+    return user;
   }
 
   async remove(id: number) {

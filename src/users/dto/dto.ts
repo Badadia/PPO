@@ -21,7 +21,6 @@ export class Dto {
 
   @IsNotEmpty()
   @IsString()
-  @MinLength(6)
   senha: string;
 }
 

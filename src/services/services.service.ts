@@ -10,6 +10,7 @@ import { Service } from './entities/service.entity';
 import { Admin, Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { ServiceStatus } from './dto/serviceStatus.enum';
+import { UpdateServiceStatusDto } from './dto/updateServiceStatus.dto';
 
 @Injectable()
 export class ServicesService {
@@ -71,6 +72,22 @@ export class ServicesService {
     }
 
     return this.serviceRepository.findOne({ where: { id: id } });
+  }
+
+  async updateStatus(
+    id: number,
+    updateStatusDto: UpdateServiceStatusDto,
+  ): Promise<Service> {
+    const service = await this.serviceRepository.findOne({ where: { id } });
+
+    if (!service) {
+      throw new NotFoundException(`Serviço com ID ${id} não encontrado.`);
+    }
+
+    service.status = updateStatusDto.status;
+    await this.serviceRepository.save(service);
+
+    return service;
   }
 
   async remove(id: number) {

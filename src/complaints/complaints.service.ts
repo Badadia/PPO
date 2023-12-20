@@ -10,6 +10,7 @@ import { Complaint } from './entities/complaint.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { ComplaintStatus } from './dto/complaintStatus.enum';
+import { UpdateComplaintStatusDto } from './dto/updateComplaintStatus.dto';
 
 @Injectable()
 export class ComplaintsService {
@@ -71,6 +72,22 @@ export class ComplaintsService {
     }
 
     return this.complaintRepository.findOne({ where: { id: id } });
+  }
+
+  async updateStatus(
+    id: number,
+    updateStatusDto: UpdateComplaintStatusDto,
+  ): Promise<Complaint> {
+    const complaint = await this.complaintRepository.findOne({ where: { id } });
+
+    if (!complaint) {
+      throw new NotFoundException(`Denúncia com ID ${id} não encontrado.`);
+    }
+
+    complaint.status = updateStatusDto.status;
+    await this.complaintRepository.save(complaint);
+
+    return complaint;
   }
 
   async remove(id: number) {

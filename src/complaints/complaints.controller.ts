@@ -21,6 +21,7 @@ import { ComplaintOwnershipChecker } from './owner/complaint.ownership.checker';
 import { AuthUser } from 'src/auth/decorator/request.user.decorator';
 import { Roles } from 'src/users/roles/roles.decorator';
 import { Role } from 'src/users/roles/roles.enum';
+import { UpdateComplaintStatusDto } from './dto/updateComplaintStatus.dto';
 
 @JwtAuth()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -62,6 +63,15 @@ export class ComplaintsController {
     @Body() updateComplaintDto: UpdateComplaintDto,
   ) {
     return this.complaintsService.update(+id, updateComplaintDto);
+  }
+
+  @Patch('status/:id')
+  @Roles(Role.Admin)
+  async updateStatus(
+    @Param('id') id: number,
+    @Body() updateStatusDto: UpdateComplaintStatusDto,
+  ) {
+    return this.complaintsService.updateStatus(id, updateStatusDto);
   }
 
   @Delete(':id')
