@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   Req,
+  UseFilters,
 } from '@nestjs/common';
 import { ComplaintsService } from './complaints.service';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
@@ -22,10 +23,12 @@ import { AuthUser } from 'src/auth/decorator/request.user.decorator';
 import { Roles } from 'src/users/roles/roles.decorator';
 import { Role } from 'src/users/roles/roles.enum';
 import { UpdateComplaintStatusDto } from './dto/updateComplaintStatus.dto';
+import { CustomExceptionFilterComplaint } from './filters/complaint.custom-exception.filter';
 
 @JwtAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 @OwnerChecker(ComplaintOwnershipChecker)
+@UseFilters(CustomExceptionFilterComplaint)
 @Controller('complaints')
 export class ComplaintsController {
   constructor(private readonly complaintsService: ComplaintsService) {}

@@ -35,7 +35,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException(`User ID ${id} not found`);
+      throw new NotFoundException();
     }
     return user;
   }
@@ -49,7 +49,7 @@ export class UsersService {
   }> {
     const { nome, telefone, email, senha } = createUserDto;
     if (!nome || !telefone || !email || !senha) {
-      throw new UnprocessableEntityException('Validation problem');
+      throw new UnprocessableEntityException();
     }
     const hashedPassword = await bcrypt.hash(senha, 10);
 
@@ -64,7 +64,7 @@ export class UsersService {
     });
 
     if (existingUser) {
-      throw new ConflictException('Email already in use!');
+      throw new ConflictException();
     }
 
     const user = await this.userRepository.create({
@@ -93,7 +93,7 @@ export class UsersService {
     const updateResult = await this.userRepository.update(id, updateUsersDto);
 
     if (updateResult.affected === 0) {
-      throw new NotFoundException(`User ID ${id} not found`);
+      throw new NotFoundException();
     }
 
     const user = await this.userRepository.findOne({ where: { id: id } });
@@ -106,7 +106,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException(`User ID ${id} not found`);
+      throw new NotFoundException();
     }
 
     return this.userRepository.remove(user);

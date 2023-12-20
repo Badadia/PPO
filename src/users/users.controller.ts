@@ -14,12 +14,11 @@ import {
   SerializeOptions,
   ClassSerializerInterceptor,
   Res,
+  UseFilters,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Dto, UserQueryDto } from './dto/dto';
 import { DtoUpdate } from './dto/dto-update';
-import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from './roles/roles.guard';
 import { Role } from './roles/roles.enum';
 import { Roles } from './roles/roles.decorator';
 import { OwnerChecker } from './roles/decorator/ownership.checker.decorator';
@@ -27,11 +26,13 @@ import { UserOwnershipChecker } from './owner/user.ownership.checker';
 import { JwtAuth } from 'src/auth/decorator/jwt.auth.decorator';
 import { Public } from 'src/auth/decorator/public.auth.decorator';
 import { Response } from 'express';
+import { CustomExceptionFilterUser } from './filters/user.custom-exception.filter';
 
 @Controller('user')
 @UseInterceptors(ClassSerializerInterceptor)
 @JwtAuth()
 @OwnerChecker(UserOwnershipChecker)
+@UseFilters(CustomExceptionFilterUser)
 @SerializeOptions({
   exposeUnsetFields: false,
 })

@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   Req,
+  UseFilters,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -22,10 +23,12 @@ import { Roles } from 'src/users/roles/roles.decorator';
 import { ServiceOwnershipChecker } from './owner/service.ownership.checker';
 import { AuthUser } from 'src/auth/decorator/request.user.decorator';
 import { UpdateServiceStatusDto } from './dto/updateServiceStatus.dto';
+import { CustomExceptionFilterService } from './filters/service.custom-exception.filter';
 
 @JwtAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 @OwnerChecker(ServiceOwnershipChecker)
+@UseFilters(CustomExceptionFilterService)
 @Controller('services')
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}

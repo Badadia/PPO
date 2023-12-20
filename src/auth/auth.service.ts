@@ -50,7 +50,7 @@ export class AuthService {
     });
 
     if (!login || !(await bcrypt.compare(senha, login.senha))) {
-      throw new UnauthorizedException('Incorrect Email or Password!');
+      throw new UnauthorizedException('Senha ou email incorretos!');
     }
 
     return {

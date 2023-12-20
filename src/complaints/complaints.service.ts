@@ -56,7 +56,7 @@ export class ComplaintsService {
     });
 
     if (!complaint) {
-      throw new NotFoundException(`Complaint ID ${id} not found`);
+      throw new NotFoundException();
     }
     return complaint;
   }
@@ -68,7 +68,7 @@ export class ComplaintsService {
     );
 
     if (updateResult.affected === 0) {
-      throw new NotFoundException(`Complaint ID ${id} not found`);
+      throw new NotFoundException();
     }
 
     return this.complaintRepository.findOne({ where: { id: id } });
@@ -81,7 +81,7 @@ export class ComplaintsService {
     const complaint = await this.complaintRepository.findOne({ where: { id } });
 
     if (!complaint) {
-      throw new NotFoundException(`Denúncia com ID ${id} não encontrado.`);
+      throw new NotFoundException();
     }
 
     complaint.status = updateStatusDto.status;
@@ -96,7 +96,7 @@ export class ComplaintsService {
     });
 
     if (!complaint) {
-      throw new NotFoundException(`Complaint ID ${id} not found`);
+      throw new NotFoundException();
     }
 
     return this.complaintRepository.remove(complaint);

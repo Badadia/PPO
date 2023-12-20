@@ -56,7 +56,7 @@ export class ServicesService {
     });
 
     if (!service) {
-      throw new NotFoundException(`Service ID ${id} not found`);
+      throw new NotFoundException();
     }
     return service;
   }
@@ -68,7 +68,7 @@ export class ServicesService {
     );
 
     if (updateResult.affected === 0) {
-      throw new NotFoundException(`Service ID ${id} not found`);
+      throw new NotFoundException();
     }
 
     return this.serviceRepository.findOne({ where: { id: id } });
@@ -81,7 +81,7 @@ export class ServicesService {
     const service = await this.serviceRepository.findOne({ where: { id } });
 
     if (!service) {
-      throw new NotFoundException(`Serviço com ID ${id} não encontrado.`);
+      throw new NotFoundException();
     }
 
     service.status = updateStatusDto.status;
@@ -96,7 +96,7 @@ export class ServicesService {
     });
 
     if (!service) {
-      throw new NotFoundException(`Service ID ${id} not found`);
+      throw new NotFoundException();
     }
 
     return this.serviceRepository.remove(service);
