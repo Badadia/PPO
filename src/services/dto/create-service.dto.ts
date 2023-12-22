@@ -4,9 +4,9 @@ import {
   IsNumber,
   IsObject,
   IsString,
+  isString,
 } from 'class-validator';
 import { ServiceType } from './serviceType.enum';
-import { Point } from 'geojson';
 
 export class CreateServiceDto {
   @IsNotEmpty()
@@ -22,6 +22,10 @@ export class CreateServiceDto {
   descricao: string;
 
   @IsNotEmpty()
-  @IsObject()
-  location: Point;
+  @IsString()
+  latitude: string;
+
+  @IsNotEmpty()
+  @IsString()
+  longitude: string;
 }

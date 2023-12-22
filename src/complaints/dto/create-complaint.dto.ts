@@ -1,10 +1,9 @@
 import { IsEnum, IsNotEmpty, IsObject, IsString } from 'class-validator';
 import { ComplaintType } from './complaintType.enum';
-import { Point } from 'geojson';
 export class CreateComplaintDto {
   @IsNotEmpty()
   @IsEnum(ComplaintType)
-  tipo: ComplaintType;
+  setor: ComplaintType;
 
   @IsNotEmpty()
   @IsString()
@@ -15,6 +14,10 @@ export class CreateComplaintDto {
   descricao: string;
 
   @IsNotEmpty()
-  @IsObject()
-  location: Point;
+  @IsString()
+  latitude: string;
+
+  @IsNotEmpty()
+  @IsString()
+  longitude: string;
 }

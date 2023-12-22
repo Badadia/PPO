@@ -1,4 +1,6 @@
 export enum ServiceStatus {
-  Pendente = 'Pendente',
-  Resolvido = 'Resolvido',
+  Inalterado = 'Inalterado',
+  Visualizado = 'Visualizado',
+  Emprocesso = 'Em processo',
+  Concluido = 'Concluido',
 }

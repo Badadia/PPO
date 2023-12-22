@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -7,10 +8,19 @@ import {
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { Service } from './entities/service.entity';
-import { Admin, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { ServiceStatus } from './dto/serviceStatus.enum';
 import { UpdateServiceStatusDto } from './dto/updateServiceStatus.dto';
+import { ServiceDto } from './dto/Service.dto';
+import { Point } from 'geojson';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as util from 'util';
+
+const renameAsync = util.promisify(fs.rename);
+const mkdirAsync = util.promisify(fs.mkdir);
+const unlinkAsync = util.promisify(fs.unlink);
 
 @Injectable()
 export class ServicesService {
@@ -22,16 +32,61 @@ export class ServicesService {
   async create(
     createServiceDto: CreateServiceDto,
     userId: number,
+    file: Express.Multer.File,
   ): Promise<Service> {
-    const service = await this.serviceRepository.create(createServiceDto);
+    const latitude = parseFloat(createServiceDto.latitude);
+    const longitude = parseFloat(createServiceDto.longitude);
 
-    const user = new User();
-    user.id = userId;
-    service.user = user;
-    service.status = ServiceStatus.Pendente;
+    if (isNaN(latitude) || isNaN(longitude)) {
+      throw new BadRequestException(
+        'Latitude e longitude devem ser números válidos.',
+      );
+    }
 
-    await this.serviceRepository.save(service);
-    return service;
+    const point: Point = {
+      type: 'Point',
+      coordinates: [longitude, latitude],
+    };
+
+    const serviceDto = new ServiceDto();
+    serviceDto.descricao = createServiceDto.descricao;
+    serviceDto.endereco = createServiceDto.endereco;
+    serviceDto.tipo = createServiceDto.tipo;
+    serviceDto.location = point;
+
+    try {
+      const service = await this.serviceRepository.create(serviceDto);
+
+      const user = new User();
+      user.id = userId;
+      service.user = user;
+      service.status = ServiceStatus.Inalterado;
+
+      if (file) {
+        await this.moveFileToPermanentLocation(file);
+        const finalPath = file.filename;
+        service.imageUrl = finalPath;
+      }
+
+      await this.serviceRepository.save(service);
+      return service;
+    } catch (error) {
+      console.log('Entrou no bloco catch', error);
+      if (file) {
+        await this.deleteTemporaryFile(file);
+      }
+      throw error;
+    }
+  }
+
+  async handleFileUpload(file: Express.Multer.File): Promise<string> {
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new Error('Tipo de arquivo não permitido.');
+    }
+    const filePath = '/path/to/saved/file/' + file.filename;
+    return filePath;
   }
 
   async findAll() {
@@ -107,5 +162,25 @@ export class ServicesService {
       where: { id: serviceId, user: { id: userId } },
     });
     return service ? true : false;
+  }
+
+  async moveFileToPermanentLocation(
+    file: Express.Multer.File,
+  ): Promise<string> {
+    const permanentDir = './upload/permanent';
+    const finalPath = path.join(permanentDir, file.filename);
+
+    // Criar o diretório se ele não existir
+    if (!fs.existsSync(permanentDir)) {
+      await mkdirAsync(permanentDir, { recursive: true });
+    }
+
+    await renameAsync(file.path, finalPath);
+    return finalPath;
+  }
+
+  async deleteTemporaryFile(file: Express.Multer.File): Promise<void> {
+    console.log(file.path);
+    await unlinkAsync(file.path);
   }
 }

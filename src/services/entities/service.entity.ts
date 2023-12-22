@@ -28,6 +28,12 @@ export class Service {
   @Column()
   status: ServiceStatus;
 
-  @ManyToOne(() => User)
+  @Column({ nullable: true })
+  imageUrl: string;
+
+  @ManyToOne(() => User, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   user: User;
 }

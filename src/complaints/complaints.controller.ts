@@ -12,6 +12,7 @@ import {
   HttpStatus,
   Req,
   UseFilters,
+  UploadedFile,
 } from '@nestjs/common';
 import { ComplaintsService } from './complaints.service';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
@@ -24,22 +25,28 @@ import { Roles } from 'src/users/roles/roles.decorator';
 import { Role } from 'src/users/roles/roles.enum';
 import { UpdateComplaintStatusDto } from './dto/updateComplaintStatus.dto';
 import { CustomExceptionFilterComplaint } from './filters/complaint.custom-exception.filter';
+import { multerConfig } from 'src/multer-config';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileCleanupInterceptor } from 'src/services/filters/fileCleanupInterceptor.filter';
 
 @JwtAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 @OwnerChecker(ComplaintOwnershipChecker)
-@UseFilters(CustomExceptionFilterComplaint)
+//@UseFilters(CustomExceptionFilterComplaint)
+@UseInterceptors(FileCleanupInterceptor)
 @Controller('complaints')
 export class ComplaintsController {
   constructor(private readonly complaintsService: ComplaintsService) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('file', multerConfig))
   @HttpCode(HttpStatus.CREATED)
   public async create(
+    @UploadedFile() file: Express.Multer.File,
     @Body() createComplaintDto: CreateComplaintDto,
     @AuthUser('id') userId: number,
   ) {
-    return this.complaintsService.create(createComplaintDto, userId);
+    return this.complaintsService.create(createComplaintDto, userId, file);
   }
 
   @Get()
@@ -68,7 +75,7 @@ export class ComplaintsController {
     return this.complaintsService.update(+id, updateComplaintDto);
   }
 
-  @Patch('status/:id')
+  @Patch('/:id/status')
   @Roles(Role.Admin)
   async updateStatus(
     @Param('id') id: number,
