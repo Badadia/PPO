@@ -10,7 +10,7 @@ export class Complaint {
   id: number;
 
   @Column()
-  tipo: ComplaintType;
+  setor: ComplaintType;
 
   @Column()
   endereco: string;
@@ -31,6 +31,6 @@ export class Complaint {
   @Column({ nullable: true })
   imageUrl: string;
 
-  @ManyToOne(() => User, { eager: true })
+  @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
   user: User;
 }

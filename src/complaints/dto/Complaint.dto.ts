@@ -11,7 +11,7 @@ import { Point } from 'geojson';
 export class ComplaintDto {
   @IsNotEmpty()
   @IsEnum(ComplaintType)
-  tipo: ComplaintType;
+  setor: ComplaintType;
 
   @IsNotEmpty()
   @IsString()

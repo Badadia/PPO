@@ -52,7 +52,7 @@ export class ComplaintsService {
     const complaintDto = new ComplaintDto();
     complaintDto.descricao = createComplaintDto.descricao;
     complaintDto.endereco = createComplaintDto.endereco;
-    complaintDto.tipo = createComplaintDto.tipo;
+    complaintDto.setor = createComplaintDto.setor;
     complaintDto.location = point;
 
     try {
@@ -61,9 +61,10 @@ export class ComplaintsService {
       const user = new User();
       user.id = userId;
       complaint.user = user;
-      complaint.status = ComplaintStatus.Pendente;
+      complaint.status = ComplaintStatus.Inalterado;
       if (file) {
-        const finalPath = await this.moveFileToPermanentLocation(file);
+        await this.moveFileToPermanentLocation(file);
+        const finalPath = file.filename;
         complaint.imageUrl = finalPath;
       }
 

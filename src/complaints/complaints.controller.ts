@@ -32,7 +32,7 @@ import { FileCleanupInterceptor } from 'src/services/filters/fileCleanupIntercep
 @JwtAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 @OwnerChecker(ComplaintOwnershipChecker)
-@UseFilters(CustomExceptionFilterComplaint)
+//@UseFilters(CustomExceptionFilterComplaint)
 @UseInterceptors(FileCleanupInterceptor)
 @Controller('complaints')
 export class ComplaintsController {
@@ -75,7 +75,7 @@ export class ComplaintsController {
     return this.complaintsService.update(+id, updateComplaintDto);
   }
 
-  @Patch('status/:id')
+  @Patch('/:id/status')
   @Roles(Role.Admin)
   async updateStatus(
     @Param('id') id: number,

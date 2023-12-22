@@ -73,7 +73,7 @@ export class ServicesController {
     return this.servicesService.update(+id, updateServiceDto);
   }
 
-  @Patch('status/:id')
+  @Patch('/:id/status')
   @Roles(Role.Admin)
   async updateStatus(
     @Param('id') id: number,

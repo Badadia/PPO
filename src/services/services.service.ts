@@ -60,10 +60,11 @@ export class ServicesService {
       const user = new User();
       user.id = userId;
       service.user = user;
-      service.status = ServiceStatus.Pendente;
+      service.status = ServiceStatus.Inalterado;
 
       if (file) {
-        const finalPath = await this.moveFileToPermanentLocation(file);
+        await this.moveFileToPermanentLocation(file);
+        const finalPath = file.filename;
         service.imageUrl = finalPath;
       }
 

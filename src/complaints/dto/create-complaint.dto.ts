@@ -3,7 +3,7 @@ import { ComplaintType } from './complaintType.enum';
 export class CreateComplaintDto {
   @IsNotEmpty()
   @IsEnum(ComplaintType)
-  tipo: ComplaintType;
+  setor: ComplaintType;
 
   @IsNotEmpty()
   @IsString()
