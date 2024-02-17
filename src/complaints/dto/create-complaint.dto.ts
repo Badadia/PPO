@@ -13,6 +13,9 @@ export class CreateComplaintDto {
   @IsString()
   descricao: string;
 
+  @IsString()
+  complemento: string;
+
   @IsNotEmpty()
   @IsString()
   latitude: string;

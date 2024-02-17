@@ -15,13 +15,15 @@ export class Complaint {
   @Column()
   endereco: string;
 
+  @Column({ nullable: true })
+  complemento: string;
+
   @Column()
   descricao: string;
 
   @Column({
     type: 'geometry',
     spatialFeatureType: 'Point',
-    srid: 4326,
   })
   location: Point;
 

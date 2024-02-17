@@ -33,7 +33,6 @@ import { FileCleanupInterceptor } from './filters/fileCleanupInterceptor.filter'
 @JwtAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 @OwnerChecker(ServiceOwnershipChecker)
-@UseFilters(CustomExceptionFilterService)
 @UseInterceptors(FileCleanupInterceptor)
 @Controller('services')
 export class ServicesController {

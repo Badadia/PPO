@@ -1,0 +1,64 @@
+Recurso: Token
+
+       ●   ATRIBUTOS
+              o ID <leitura>
+              o NOME <leitura>
+              o EMAIL <leitura>
+
+       ●   JSON SCHEMAS (DTOs):
+              o Schema
+                     ▪   Identificador: token_post_schema
+
+                     ▪   Propriedades:
+              {
+              “email”: {“type”: “string”},
+              “senha”: {“type”: “string”},
+              }
+              o Schema
+                     ▪   Identificador: token_get_schema
+
+                     ▪   Propriedades:
+              {
+              “id”: {“type”: “string”},
+              “nome”: {“type”: “string”},
+              “email”: {“type”: “string”},
+              }
+
+
+
+       ●   PATHS:
+              o Path: /token
+                     ▪   GET
+                                   ●   Sumário: Retorna o usuário logado
+                                   ●   Segurança:
+                                          o BearerAuth: [owner]
+                                   ●   Responses
+                                          o 200
+                                                 ▪   Descrição: OK
+
+                                                 ▪   Body:
+                                                        ●    token_get_schema
+                                          o   401
+                                                 ▪   Descrição: Não Logado <Unauthorized>
+
+                                                 ▪   Body:
+                                                        ●    {msg=”Usuário não logado!”}
+                     ▪   POST
+       ●   Sumário: Realizar login e gerar o TOKEN
+       ●   Segurança: Público
+       ●   Body
+              o token_post_schema
+       ●   Respostas:
+              o 201
+                     ▪   Descrição: OK
+
+                     ▪   Header:
+                            ●      Authorization = Bearer <token>
+                     ▪   Body:
+                            ●      token_get_schema
+              o   401
+                     ▪   Descrição: CPF ou SENHA incorreta
+
+                     ▪   Body
+                            ●      {msg=”CPF ou Senha incorreta!”}
+       

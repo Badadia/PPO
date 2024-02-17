@@ -53,6 +53,7 @@ export class ComplaintsService {
     complaintDto.descricao = createComplaintDto.descricao;
     complaintDto.endereco = createComplaintDto.endereco;
     complaintDto.setor = createComplaintDto.setor;
+    complaintDto.complemento = createComplaintDto.complemento;
     complaintDto.location = point;
 
     try {
@@ -62,6 +63,7 @@ export class ComplaintsService {
       user.id = userId;
       complaint.user = user;
       complaint.status = ComplaintStatus.Inalterado;
+
       if (file) {
         await this.moveFileToPermanentLocation(file);
         const finalPath = file.filename;
@@ -79,29 +81,171 @@ export class ComplaintsService {
     }
   }
 
-  async findAll() {
-    return this.complaintRepository.find();
+  async findAll(): Promise<any[]> {
+    const complaints = await this.complaintRepository
+      .createQueryBuilder('complaint')
+      .leftJoinAndSelect('complaint.user', 'user')
+      .select([
+        'complaint.id',
+        'complaint.setor',
+        'complaint.endereco',
+        'complaint.complemento',
+        'complaint.descricao',
+        'complaint.status',
+        'complaint.imageUrl',
+        'user.id',
+        'user.nome',
+        'user.telefone',
+        'user.email',
+        'user.role',
+      ])
+      .addSelect('ST_AsText(complaint.location)', 'locationText')
+      .getRawMany();
+
+    return complaints.map((complaint) => {
+      const match = complaint.locationText.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+      if (match) {
+        const longitude = parseFloat(match[1]);
+        const latitude = parseFloat(match[2]);
+        return {
+          id: complaint.complaint_id,
+          setor: complaint.complaint_setor,
+          endereco: complaint.complaint_endereco,
+          complemento: complaint.complaint_complemento,
+          descricao: complaint.complaint_descricao,
+          status: complaint.complaint_status,
+          imageUrl: complaint.complaint_imageUrl,
+          location: {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          },
+          user: {
+            id: complaint.user_id,
+            nome: complaint.user_nome,
+            telefone: complaint.user_telefone,
+            email: complaint.user_email,
+            role: complaint.user_role,
+          },
+        };
+      }
+      return complaint;
+    });
   }
 
   async findOwnerComplaints(
     userId: number,
     authenticatedUser: User,
-  ): Promise<Complaint[]> {
+  ): Promise<any[]> {
     if (userId !== authenticatedUser.id && authenticatedUser.role !== 'admin') {
       throw new ForbiddenException(
         'Você não tem permissão para acessar essas denúncias.',
       );
     }
-    return this.complaintRepository.find({ where: { user: { id: userId } } });
+
+    const complaints = await this.complaintRepository
+      .createQueryBuilder('complaint')
+      .leftJoinAndSelect('complaint.user', 'user')
+      .where('user.id = :userId', { userId })
+      .select([
+        'complaint.id',
+        'complaint.setor',
+        'complaint.endereco',
+        'complaint.complemento',
+        'complaint.descricao',
+        'complaint.status',
+        'complaint.imageUrl',
+        'user.id',
+        'user.nome',
+        'user.telefone',
+        'user.email',
+        'user.role',
+      ])
+      .addSelect('ST_AsText(complaint.location)', 'locationText')
+      .getRawMany();
+
+    return complaints
+      .map((complaint) => {
+        const match = complaint.locationText.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+        if (match) {
+          const longitude = parseFloat(match[1]);
+          const latitude = parseFloat(match[2]);
+          return {
+            id: complaint.complaint_id,
+            setor: complaint.complaint_setor,
+            endereco: complaint.complaint_endereco,
+            complemento: complaint.complaint_complemento,
+            descricao: complaint.complaint_descricao,
+            status: complaint.complaint_status,
+            imageUrl: complaint.complaint_imageUrl,
+            location: {
+              type: 'Point',
+              coordinates: [longitude, latitude],
+            },
+            user: {
+              id: complaint.user_id,
+              nome: complaint.user_nome,
+              telefone: complaint.user_telefone,
+              email: complaint.user_email,
+              role: complaint.user_role,
+            },
+          };
+        }
+        return null;
+      })
+      .filter((complaint) => complaint !== null);
   }
 
-  async findOne(id: number) {
-    const complaint = await this.complaintRepository.findOne({
-      where: { id },
-    });
+  async findOne(id: number): Promise<any> {
+    const complaint = await this.complaintRepository
+      .createQueryBuilder('complaint')
+      .leftJoinAndSelect('complaint.user', 'user')
+      .where('complaint.id = :id', { id })
+      .select([
+        'complaint.id',
+        'complaint.setor',
+        'complaint.endereco',
+        'complaint.complemento',
+        'complaint.descricao',
+        'complaint.status',
+        'complaint.imageUrl',
+        'user.id',
+        'user.nome',
+        'user.telefone',
+        'user.email',
+        'user.role',
+      ])
+      .addSelect('ST_AsText(complaint.location)', 'locationText')
+      .getRawOne();
 
     if (!complaint) {
-      throw new NotFoundException();
+      throw new NotFoundException(`Complaint with ID ${id} not found`);
+    }
+
+    const match = complaint.locationText.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+    if (match) {
+      const longitude = parseFloat(match[1]);
+      const latitude = parseFloat(match[2]);
+      return {
+        id: complaint.complaint_id,
+        setor: complaint.complaint_setor,
+        endereco: complaint.complaint_endereco,
+        complemento: complaint.complaint_complemento,
+        descricao: complaint.complaint_descricao,
+        status: complaint.complaint_status,
+        imageUrl: complaint.complaint_imageUrl,
+        location: {
+          type: 'Point',
+          coordinates: [longitude, latitude],
+        },
+
+        user: {
+          id: complaint.user_id,
+          nome: complaint.user_nome,
+          telefone: complaint.user_telefone,
+          email: complaint.user_email,
+          role: complaint.user_role,
+        },
+      };
     }
     return complaint;
   }
@@ -160,7 +304,6 @@ export class ComplaintsService {
     const permanentDir = './upload/permanent';
     const finalPath = path.join(permanentDir, file.filename);
 
-    // Criar o diretório se ele não existir
     if (!fs.existsSync(permanentDir)) {
       await mkdirAsync(permanentDir, { recursive: true });
     }
