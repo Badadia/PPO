@@ -17,6 +17,9 @@ export class CreateServiceDto {
   @IsString()
   endereco: string;
 
+  @IsString()
+  complemento: string;
+
   @IsNotEmpty()
   @IsString()
   descricao: string;

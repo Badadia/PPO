@@ -1,0 +1,201 @@
+Recurso: Serviços
+
+  ● ATRIBUTOS
+    ○ ID <gerado> <leitura>
+    ○ TIPO <obrigatório>
+    ○ ENDERECO <obrigatório>
+    ○ COMPLEMENTO
+    ○ DESCRICAO
+    ○ COORDENADAS <obrigatório>
+    ○ STATUS <gerado> <obrigatório>
+    ○ IMAGEM
+    ○ USER_ID <obrigatório>
+
+  ● JSON SCHEMAS (ODTs):
+
+    ○ Schema
+      ■ Identificador: service_get_schema
+      ■ Propriedades:
+
+    {
+    “id”: {“type”: “string”},
+    "tipo": {“type”: “enum”},
+    “endereco”: {“type”: “string”},
+    “complemento”: {“type”: “string”},
+    “descricao”: {“type”: “string”},
+    “coordenadas”: {“type”: “point”},
+    “status”: {“type”: “enum”},
+    “imagem”: {“type”: “file”},
+    “user_id”: {“type”: “int”},
+    }
+
+    ○ Schema
+      ■ Identificador: service_post_schema
+      ■ Propriedades:
+
+    {
+    “tipo”: {“type”: “enum”},
+    “endereco”: {“type”: “string”},
+    “complemento”: {“type”: “string”},
+    “descricao”: {“type”: “string”},
+    “coodenadas”: {“type”: “point”},
+    “imagem”: {“type”: “file”},
+    }
+
+  ● PATHS:
+
+    o Path: /services
+      ▪ GET
+         ● Sumário: Lista todos os serviços requisitados
+         ● Segurança:
+            o BearerAuth: [admin]
+         ● Paginação:
+            o [limit = 10, max = 100, sortby = nome, order = DESC]
+         ● Filtros:
+            o [tipo, user_id]
+         ● Responses
+            o 200
+               ▪ Descrição: OK
+               ▪ Body:
+                  ● Array
+                  ● service_get_schema
+            o 401
+         ▪ Descrição: Não Logado <Unauthorized>
+           ▪ Body:
+                  ● {error=”Usuário não logado!”}
+            o 403
+              ▪ Descrição: Proibido <Forbidden>
+              ▪ Body:
+                 ● {mensagem=”Usuário não tem permissão!”}
+
+  ▪ POST
+     ● Sumário: Solicitar serviço
+     ● Segurança:
+       o BearerAuth: [user]
+     ● Body
+       o service_post_schema
+     ● Respostas:
+       o 201
+          ▪ Descrição: OK
+          ▪ Header:
+             ● Location = /services/:id
+          ▪ Body:
+             ● service_get_schema
+       o 422
+          ▪ Descrição: Validation Error or Unprocessable
+          Entity
+          ▪ Body
+             ● {mensagem=”Erro de sintaxe”}
+
+o Path: /services/:id
+  ▪ GET
+     ● Sumário: Detalhar o serviço
+     ● Segurança:
+        o BearerAuth: [owner, admin]
+     ● Responses
+        o 200
+          ▪ Descrição: OK
+          ▪ Body
+             ● service_get_schema
+        o 422
+          ▪ Descrição: Validation Error (id must be a
+          number)
+          ▪ Body
+             ● {mensagem=”Erro de sintaxe”}
+        o 404
+          ▪ Descrição: Serviço não encontrado
+        o 401
+          ▪ Descrição: Não Logado <Unauthorized>
+          ▪ Body:
+             ● {error=”Usuário não logado!”}
+        o 403
+          ▪ Descrição: Proibido <Forbidden>
+          ▪ Body:
+             ● {mensagem=”Usuário não tem
+             permissão!”}
+  ▪ DELETE
+     ● Sumário: Remover o serviço
+     ● Segurança:
+       o BearerAuth: [owner, admin]
+     ● Responses
+       o 200
+         ▪ Descrição: OK
+         ▪ Body
+            ● {mensagem=”Serviço removido!”}
+       o 404
+         ▪ Descrição: Serviço não encontrado
+       o 401
+         ▪ Descrição: Não Logado <Unauthorized>
+         ▪ Body:
+            ● {error=”Usuário não logado!”}
+       o 403
+         ▪ Descrição: Proibido <Forbidden>
+         ▪ Body:
+            ● {mensagem=”Usuário não tem
+            permissão!”}
+
+  ▪ PATCH
+     ● Sumário: Atualizar o usuário
+     ● Segurança:
+       o BearerAuth: [owner, admin]
+     ● Responses
+       o 200
+         ▪ Descrição: OK
+         ▪ Body
+            ● {mensagem=”Serviço atualizado!”}
+       o 404
+         ▪ Descrição: Serviço não encontrado
+       o 401
+         ▪ Descrição: Não Logado <Unauthorized>
+         ▪ Body:
+            ● {error=”Usuário não logado!”}
+       o 403
+         ▪ Descrição: Proibido <Forbidden>
+         ▪ Body:
+            ● {mensagem=”Usuário não tem
+            permissão!”}
+
+o Path: /services/user/:id
+  ▪ GET
+     ● Sumário: Detalhar todos os serviços de um usuário
+     ● Segurança:
+        o BearerAuth: [owner, admin]
+     ● Responses
+        o 200
+          ▪ Descrição: OK
+          ▪ Body
+             ● Array
+             ● service_get_schema
+        o 422
+          ▪ Descrição: Validation Error (id must be a number)
+          ▪ Body
+             ● {mensagem=”Erro de sintaxe”}
+        o 404
+          ▪ Descrição: Serviços não encontrados
+        o 401
+          ▪ Descrição: Não Logado <Unauthorized>
+          ▪ Body:
+             ● {error=”Usuário não logado!”}
+        o 403
+          ▪ Descrição: Proibido <Forbidden>
+          ▪ Body:
+              ● {mensagem=”Usuário não tem permissão!”}
+
+o Path: /services/:id/status
+  ▪ PATCH
+     ● Sumário: Altera o status de um serviço
+     ● Segurança:
+        o BearerAuth: [admin]
+     ● Responses
+        o 200
+            ▪ Descrição: OK
+        o 404
+            ▪ Descrição: Serviço não encontrado
+        o 401
+            ▪ Descrição: Não Logado <Unauthorized>
+              ▪ Body:
+                 ● {error=”Usuário não logado!”}
+        o 403
+            ▪ Descrição: Proibido <Forbidden>
+              ▪ Body:
+                ● {mensagem=”Usuário não tem permissão!”}

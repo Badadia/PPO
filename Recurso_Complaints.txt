@@ -1,0 +1,202 @@
+Recurso: Denúncias
+
+  ● ATRIBUTOS
+    ○ ID <gerado> <leitura>
+    ○ SETOR <obrigatório>
+    ○ ENDERECO <obrigatório>
+    ○ COMPLEMENTO
+    ○ DESCRICAO
+    ○ COORDENADAS <obrigatório>
+    ○ STATUS <gerado> <obrigatório>
+    ○ IMAGEM
+    ○ USER_ID <obrigatório>
+
+  ● JSON SCHEMAS (ODTs):
+
+    ○ Schema
+      ■ Identificador: complaints_get_schema
+      ■ Propriedades:
+
+    {
+    “id”: {“type”: “string”},
+    "setor": {“type”: “enum”},
+    “endereco”: {“type”: “string”},
+    “complemento”: {“type”: “string”},
+    “descricao”: {“type”: “string”},
+    “coordenadas”: {“type”: “point”},
+    “status”: {“type”: “enum”},
+    “imagem”: {“type”: “file”},
+    “user_id”: {“type”: “int”},
+    }
+
+    ○ Schema
+      ■ Identificador: complaints_post_schema
+      ■ Propriedades:
+
+    {
+    setor: {“type”: “enum”},
+    “endereco”: {“type”: “string”},
+    “complemento”: {“type”: “string”},
+    “descricao”: {“type”: “string”},
+    “coodenadas”: {“type”: “point”},
+    “imagem”: {“type”: “file”},
+    }
+
+  ● PATHS:
+
+    o Path: /complaints
+      ▪ GET
+         ● Sumário: Lista todas as denúncias realizadas
+         ● Segurança:
+            o BearerAuth: [admin]
+         ● Paginação:
+            o [limit = 10, max = 100, sortby = nome, order = DESC]
+         ● Filtros:
+            o [tipo, user_id]
+         ● Responses
+            o 200
+               ▪ Descrição: OK
+               ▪ Body:
+                  ● Array
+                  ● complaints_get_schema
+            o 401
+         ▪ Descrição: Não Logado <Unauthorized>
+         ▪ Body:
+            ● {error=”Usuário não logado!”}
+       o 403
+         ▪ Descrição: Proibido <Forbidden>
+         ▪ Body:
+            ● {mensagem=”Usuário não tem
+               permissão!”}
+
+  ▪ POST
+     ● Sumário: Realizar denúncia
+     ● Segurança:
+       o BearerAuth: [user]
+     ● Body
+       o complaints_post_schema
+     ● Respostas:
+       o 201
+          ▪ Descrição: OK
+          ▪ Header:
+             ● Location = /complaints/:id
+          ▪ Body:
+             ● complaints_get_schema
+       o 422
+          ▪ Descrição: Validation Error or Unprocessable
+          Entity
+          ▪ Body
+             ● {mensagem=”Erro de sintaxe”}
+
+o Path: /complaints/:id
+  ▪ GET
+     ● Sumário: Detalhar a denúncia
+     ● Segurança:
+        o BearerAuth: [owner, admin]
+     ● Responses
+        o 200
+          ▪ Descrição: OK
+          ▪ Body
+             ● complaints_get_schema
+        o 422
+          ▪ Descrição: Validation Error (id must be a
+          number)
+          ▪ Body
+             ● {mensagem=”Erro de sintaxe”}
+        o 404
+          ▪ Descrição: Denúncia não encontrada
+        o 401
+          ▪ Descrição: Não Logado <Unauthorized>
+          ▪ Body:
+             ● {error=”Usuário não logado!”}
+        o 403
+          ▪ Descrição: Proibido <Forbidden>
+          ▪ Body:
+             ● {mensagem=”Usuário não tem
+             permissão!”}
+  ▪ DELETE
+     ● Sumário: Remover a denúncia
+     ● Segurança:
+       o BearerAuth: [owner, admin]
+     ● Responses
+       o 200
+         ▪ Descrição: OK
+         ▪ Body
+            ● {mensagem=”Denúncia removida!”}
+       o 404
+         ▪ Descrição: Denúncia não encontrada
+       o 401
+         ▪ Descrição: Não Logado <Unauthorized>
+         ▪ Body:
+            ● {error=”Usuário não logado!”}
+       o 403
+         ▪ Descrição: Proibido <Forbidden>
+         ▪ Body:
+            ● {mensagem=”Usuário não tem
+            permissão!”}
+
+  ▪ PATCH
+     ● Sumário: Atualizar a denúncia
+     ● Segurança:
+       o BearerAuth: [owner, admin]
+     ● Responses
+       o 200
+         ▪ Descrição: OK
+         ▪ Body
+            ● {mensagem=Denúncia atualizada!”}
+       o 404
+         ▪ Descrição: Denúncia não encontrada
+       o 401
+         ▪ Descrição: Não Logado <Unauthorized>
+         ▪ Body:
+            ● {error=”Usuário não logado!”}
+       o 403
+         ▪ Descrição: Proibido <Forbidden>
+         ▪ Body:
+            ● {mensagem=”Usuário não tem
+            permissão!”}
+
+o Path: /complaints/user/:id
+  ▪ GET
+     ● Sumário: Detalhar todas as denúncias de um usuário
+     ● Segurança:
+        o BearerAuth: [owner, admin]
+     ● Responses
+        o 200
+          ▪ Descrição: OK
+          ▪ Body
+             ● Array
+             ● complaints_get_schema
+        o 422
+          ▪ Descrição: Validation Error (id must be a number)
+          ▪ Body
+             ● {mensagem=”Erro de sintaxe”}
+        o 404
+          ▪ Descrição: Denúncias não encontradas
+        o 401
+          ▪ Descrição: Não Logado <Unauthorized>
+          ▪ Body:
+            ● {error=”Usuário não logado!”}
+        o 403
+          ▪ Descrição: Proibido <Forbidden>
+          ▪ Body:
+            ● {mensagem=”Usuário não tem permissão!”}
+
+o Path: /complaints/:id/status
+  ▪ PATCH
+     ● Sumário: Altera o status de uma denúncia
+     ● Segurança:
+        o BearerAuth: [admin]
+     ● Responses
+        o 200
+            ▪ Descrição: OK
+        o 404
+            ▪ Descrição: Denúncia não encontrada
+        o 401
+            ▪ Descrição: Não Logado <Unauthorized>
+              ▪ Body:
+                 ● {error=”Usuário não logado!”}
+        o 403
+            ▪ Descrição: Proibido <Forbidden>
+              ▪ Body:
+                ● {mensagem=”Usuário não tem permissão!”}

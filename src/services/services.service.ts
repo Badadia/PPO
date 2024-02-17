@@ -52,6 +52,7 @@ export class ServicesService {
     serviceDto.descricao = createServiceDto.descricao;
     serviceDto.endereco = createServiceDto.endereco;
     serviceDto.tipo = createServiceDto.tipo;
+    serviceDto.complemento = createServiceDto.complemento;
     serviceDto.location = point;
 
     try {
@@ -89,30 +90,173 @@ export class ServicesService {
     return filePath;
   }
 
-  async findAll() {
-    return this.serviceRepository.find();
+  async findAll(): Promise<any[]> {
+    const services = await this.serviceRepository
+      .createQueryBuilder('service')
+      .leftJoinAndSelect('service.user', 'user')
+      .select([
+        'service.id',
+        'service.tipo',
+        'service.endereco',
+        'service.complemento',
+        'service.descricao',
+        'service.status',
+        'service.imageUrl',
+        'user.id',
+        'user.nome',
+        'user.telefone',
+        'user.email',
+        'user.role',
+      ])
+      .addSelect('ST_AsText(service.location)', 'locationText')
+      .getRawMany();
+
+    return services
+      .map((service) => {
+        const match = service.locationText.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+        if (match) {
+          const longitude = parseFloat(match[1]);
+          const latitude = parseFloat(match[2]);
+          return {
+            id: service.service_id,
+            tipo: service.service_tipo,
+            endereco: service.service_endereco,
+            complemento: service.service_complemento,
+            descricao: service.service_descricao,
+            status: service.service_status,
+            imageUrl: service.service_imageUrl,
+            location: {
+              type: 'Point',
+              coordinates: [longitude, latitude],
+            },
+            user: {
+              id: service.user_id,
+              nome: service.user_nome,
+              telefone: service.user_telefone,
+              email: service.user_email,
+              role: service.user_role,
+            },
+          };
+        }
+        return null;
+      })
+      .filter((service) => service !== null);
   }
 
   async findOwnerServices(
     userId: number,
     authenticatedUser: User,
-  ): Promise<Service[]> {
+  ): Promise<any[]> {
     if (userId !== authenticatedUser.id && authenticatedUser.role !== 'admin') {
       throw new ForbiddenException(
         'Você não tem permissão para acessar esses serviços.',
       );
     }
-    return this.serviceRepository.find({ where: { user: { id: userId } } });
+    const services = await this.serviceRepository
+      .createQueryBuilder('service')
+      .leftJoinAndSelect('service.user', 'user')
+      .where('user.id = :userId', { userId })
+      .select([
+        'service.id',
+        'service.tipo',
+        'service.endereco',
+        'service.complemento',
+        'service.descricao',
+        'service.status',
+        'service.imageUrl',
+        'user.id',
+        'user.nome',
+        'user.telefone',
+        'user.email',
+        'user.role',
+      ])
+      .addSelect('ST_AsText(service.location)', 'locationText')
+      .getRawMany();
+
+    return services
+      .map((service) => {
+        const match = service.locationText.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+        if (match) {
+          const longitude = parseFloat(match[1]);
+          const latitude = parseFloat(match[2]);
+          return {
+            id: service.service_id,
+            tipo: service.service_tipo,
+            endereco: service.service_endereco,
+            complemento: service.service_complemento,
+            descricao: service.service_descricao,
+            status: service.service_status,
+            imageUrl: service.service_imageUrl,
+            location: {
+              type: 'Point',
+              coordinates: [longitude, latitude],
+            },
+            user: {
+              id: service.user_id,
+              nome: service.user_nome,
+              telefone: service.user_telefone,
+              email: service.user_email,
+              role: service.user_role,
+            },
+          };
+        }
+        return null;
+      })
+      .filter((service) => service !== null);
   }
 
-  async findOne(id: number) {
-    const service = await this.serviceRepository.findOne({
-      where: { id },
-    });
+  async findOne(id: number): Promise<any> {
+    const service = await this.serviceRepository
+      .createQueryBuilder('service')
+      .leftJoinAndSelect('service.user', 'user')
+      .where('service.id = :id', { id })
+      .select([
+        'service.id',
+        'service.tipo',
+        'service.endereco',
+        'service.complemento',
+        'service.descricao',
+        'service.status',
+        'service.imageUrl',
+        'user.id',
+        'user.nome',
+        'user.telefone',
+        'user.email',
+        'user.role',
+      ])
+      .addSelect('ST_AsText(service.location)', 'locationText')
+      .getRawOne();
 
     if (!service) {
-      throw new NotFoundException();
+      throw new NotFoundException(`Service with ID ${id} not found`);
     }
+
+    const match = service.locationText.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+    if (match) {
+      const longitude = parseFloat(match[1]);
+      const latitude = parseFloat(match[2]);
+      return {
+        id: service.service_id,
+        tipo: service.service_tipo,
+        endereco: service.service_endereco,
+        complemento: service.service_complemento,
+        descricao: service.service_descricao,
+        status: service.service_status,
+        imageUrl: service.service_imageUrl,
+        location: {
+          type: 'Point',
+          coordinates: [longitude, latitude],
+        },
+        user: {
+          id: service.user_id,
+          nome: service.user_nome,
+          telefone: service.user_telefone,
+          email: service.user_email,
+          role: service.user_role,
+        },
+      };
+    }
+
     return service;
   }
 

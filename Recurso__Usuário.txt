@@ -1,0 +1,144 @@
+       Recurso: Usuário
+
+       ●   ATRIBUTOS
+              ○ ID <gerado> <leitura>
+              ○ NOME <obrigatório>
+              ○ TELEFONE <obrigatório>
+              ○ EMAIL <único> <obrigatório>
+              ○ SENHA <omitido> <obrigatório>
+              ○ CARGO <gerado>
+
+       ●   JSON SCHEMAS (ODTs):
+              ○ Schema
+                     ■ Identificador: usuario_get_schema
+                     ■ Propriedades:
+              {
+              “id”: {“type”: “string”},
+              “nome”: {“type”: “string”},
+              “telefone”: {“type”: “int”},
+              }
+              ○ Schema
+                     ■ Identificador: usuario_post_schema
+                     ■ Propriedades:
+              {
+              “nome”: {“type”: “string”},
+              “telefone”: {“type”: “int”},
+              “email”: {“type”: “string”},
+              “senha”: {“type”: “string”},
+              }
+
+
+       ●   PATHS:
+              o Path: /user
+                     ▪ GET
+                            ●   Sumário: Lista todos os usuários
+                            ●   Segurança:
+                                   o BearerAuth: [admin]
+                            ●   Paginação:
+                                   o [limit = 10, max = 100, sortby = nome, order = DESC]
+                            ●   Filtros:
+                                   o [nome, email]
+                            ●   Responses
+                                   o 200
+                                          ▪ Descrição: OK
+                                          ▪ Body:
+                                                 ● Array
+                                                 ● usuario_get_schema
+                                   o 401
+                                          ▪ Descrição: Não Logado <Unauthorized>
+                                          ▪ Body:
+                                                 ● {error=”Usuário não logado!”}
+                                   o 403
+                                            ▪   Descrição: Proibido <Forbidden>
+                                          ▪   Body:
+                                                        ● {mensagem=”Usuário não tem
+                                                                      permissão!”}
+                     ▪    POST
+                     ● Sumário: Cadastrar usuário
+                     ● Segurança: Público
+                     ● Body
+                     o usuario_post_schema
+                     ● Respostas:
+                     o 201
+                            ▪ Descrição: OK
+                            ▪ Header:
+                                          ● Location = /user/:id
+                            ▪ Body:
+                                          ● usuario_get_schema
+                     o 422
+                            ▪ Descrição: Validation Error or Unprocessable
+                                   Entity
+                            ▪ Body
+                                          ● {mensagem=”Erro de sintaxe”}
+                     o 409
+                            ▪ Descrição: Conflict Error (unique constraint is
+                                   violated)
+                            ▪ Body
+                                          ● {mensagem=”CPF já existe!”}
+       o   Path: /user/:id
+              ▪ GET
+                     ● Sumário: Detalhar o usuário
+                     ● Segurança:
+                     o BearerAuth: [owner, admin]
+                     ● Responses
+                     o 200
+                            ▪ Descrição: OK
+                            ▪ Body
+                                          ● usuario_get_schema
+                     o 422
+                            ▪ Descrição: Validation Error (id must be a
+                                   number)
+                                   ▪   Body
+                                          ●   {mensagem=”Erro de sintaxe”}
+                            o   404
+                                   ▪   Descrição: Usuário não encontrado
+                            o   401
+                                   ▪   Descrição: Não Logado <Unauthorized>
+                                   ▪   Body:
+                                          ● {error=”Usuário não logado!”}
+                            o   403
+                                   ▪   Descrição: Proibido <Forbidden>
+                                   ▪   Body:
+                                         ●   {mensagem=”Usuário não tem
+                                                        permissão!”}
+              ▪   DELETE
+                     ● Sumário: Remover o usuário
+                     ● Segurança:
+                            o BearerAuth: [owner, admin]
+                     ● Responses
+                            o 200
+                                   ▪ Descrição: OK
+                                   ▪   Body:
+                                          ●   {mensagem=”Usuário removido!”}
+              o   404
+                     ▪   Descrição: Usuário não encontrado
+              o   401
+                     ▪   Descrição: Não Logado <Unauthorized>
+                     ▪   Body:
+                            ● {error=”Usuário não logado!”}
+              o   403
+                     ▪   Descrição: Proibido <Forbidden>
+                     ▪   Body:
+                            ● {mensagem=”Usuário não tem
+                                   permissão!”}
+       ▪   PATCH
+              ● Sumário: Atualizar o usuário
+              ● Segurança:
+              o BearerAuth: [owner, admin]
+              ● Responses
+              o 200
+                     ▪ Descrição: OK
+                     ▪   Body
+                            ●   {mensagem=”Usuário atualizado!”}
+              o   404
+                     ▪   Descrição: Usuário não encontrado
+              o   401
+                     ▪   Descrição: Não Logado <Unauthorized>
+                     ▪   Body:
+                            ● {error=”Usuário não logado!”}
+              o   403
+                     ▪   Descrição: Proibido <Forbidden>
+                     ▪   Body:
+                            ● {mensagem=”Usuário não tem
+                                   permissão!”}
+       

@@ -43,7 +43,6 @@ export class UsersController {
   @Roles(Role.Admin)
   @HttpCode(HttpStatus.OK)
   findAll(@Query() query: UserQueryDto) {
-    //todo: transformar a query em filtro e passar como paratero no userService.findAll
     return this.usersService.findAll();
   }
 
